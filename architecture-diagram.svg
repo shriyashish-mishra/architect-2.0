@@ -1,0 +1,172 @@
+<svg viewBox="0 0 1600 1060" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4fc3f7"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f2a93b"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="1060" fill="#0a0d12"/>
+
+  <!-- grid backdrop -->
+  <g stroke="#1c2733" stroke-width="1">
+    <path d="M0,0 H1600 M0,40 H1600 M0,80 H1600" opacity="0"/>
+  </g>
+  <g opacity="0.5">
+    <g stroke="#132030">
+      <line x1="0" y1="0" x2="1600" y2="0"/>
+    </g>
+  </g>
+
+  <text x="40" y="46" fill="#eef1f6" font-size="26" font-weight="700">Architect 2.0 — system architecture</text>
+  <text x="40" y="70" fill="#8b93a3" font-size="14">Six planes: client, control, realtime/proxy, agent, execution, delivery</text>
+
+  <!-- ============ CLIENT ============ -->
+  <g>
+    <rect x="640" y="100" width="320" height="64" rx="10" fill="#161b24" stroke="#f2a93b" stroke-width="1.5"/>
+    <text x="800" y="126" fill="#eef1f6" font-size="15" font-weight="600" text-anchor="middle">Browser — Architect 2.0 UI</text>
+    <text x="800" y="146" fill="#97a1b3" font-size="12" text-anchor="middle">Next.js · Vercel edge</text>
+  </g>
+
+  <!-- ============ PROXY / GATEWAY (hub) ============ -->
+  <g>
+    <rect x="560" y="210" width="480" height="70" rx="10" fill="#10141b" stroke="#4fc3f7" stroke-width="1.5"/>
+    <text x="800" y="238" fill="#eef1f6" font-size="15" font-weight="600" text-anchor="middle">Proxy / Gateway</text>
+    <text x="800" y="258" fill="#97a1b3" font-size="12" text-anchor="middle">TLS · session auth · preview subdomain routing · exec/file WS multiplex · rate limits</text>
+  </g>
+  <line x1="800" y1="164" x2="800" y2="210" stroke="#4fc3f7" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="812" y="192" fill="#5a6478" font-size="11">control API · realtime WS · preview</text>
+
+  <!-- ============ COLUMN LANES ============ -->
+  <!-- lane labels -->
+  <text x="180" y="320" fill="#5a6478" font-size="11" letter-spacing="1.5">CONTROL PLANE</text>
+  <text x="640" y="320" fill="#5a6478" font-size="11" letter-spacing="1.5">AGENT PLANE</text>
+  <text x="1120" y="320" fill="#5a6478" font-size="11" letter-spacing="1.5">EXECUTION PLANE</text>
+
+  <!-- connectors from proxy down to each lane -->
+  <line x1="640" y1="280" x2="260" y2="340" stroke="#4fc3f7" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="760" y1="280" x2="760" y2="340" stroke="#4fc3f7" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="920" y1="280" x2="1270" y2="340" stroke="#4fc3f7" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- ============ CONTROL PLANE ============ -->
+  <g>
+    <rect x="80" y="340" width="360" height="64" rx="10" fill="#161b24" stroke="#323b4a"/>
+    <text x="260" y="366" fill="#eef1f6" font-size="14" font-weight="600" text-anchor="middle">Control-plane API</text>
+    <text x="260" y="386" fill="#97a1b3" font-size="11" text-anchor="middle">Next.js route handlers · project/user CRUD</text>
+  </g>
+  <line x1="260" y1="404" x2="260" y2="440" stroke="#4fc3f7" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <g>
+    <rect x="80" y="440" width="360" height="70" rx="10" fill="#161b24" stroke="#34d399"/>
+    <text x="260" y="466" fill="#eef1f6" font-size="14" font-weight="600" text-anchor="middle">Postgres — Supabase</text>
+    <text x="260" y="486" fill="#97a1b3" font-size="11" text-anchor="middle">Auth · Row Level Security · projects, messages, trace</text>
+  </g>
+  <line x1="260" y1="510" x2="260" y2="546" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <g>
+    <rect x="80" y="546" width="360" height="56" rx="10" fill="#161b24" stroke="#323b4a"/>
+    <text x="260" y="580" fill="#97a1b3" font-size="12" text-anchor="middle">Supavisor pooling · read replicas at scale</text>
+  </g>
+
+  <!-- ============ AGENT PLANE ============ -->
+  <g>
+    <rect x="580" y="340" width="360" height="64" rx="10" fill="#161b24" stroke="#a78bfa"/>
+    <text x="760" y="366" fill="#eef1f6" font-size="14" font-weight="600" text-anchor="middle">Temporal workflow workers</text>
+    <text x="760" y="386" fill="#97a1b3" font-size="11" text-anchor="middle">plan → act → observe → recover, checkpointed</text>
+  </g>
+  <line x1="760" y1="404" x2="760" y2="440" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <g>
+    <rect x="580" y="440" width="360" height="56" rx="10" fill="#161b24" stroke="#323b4a"/>
+    <text x="760" y="474" fill="#97a1b3" font-size="12" text-anchor="middle">writes trace rows + file diffs → Postgres</text>
+  </g>
+  <line x1="440" y1="470" x2="580" y2="470" stroke="#5a6478" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+
+  <line x1="760" y1="404" x2="760" y2="546" stroke="#4fc3f7" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <g>
+    <rect x="580" y="546" width="360" height="60" rx="10" fill="#161b24" stroke="#4fc3f7"/>
+    <text x="760" y="572" fill="#eef1f6" font-size="14" font-weight="600" text-anchor="middle">Model gateway</text>
+    <text x="760" y="592" fill="#97a1b3" font-size="11" text-anchor="middle">one interface: generate(messages, tools)</text>
+  </g>
+  <line x1="760" y1="606" x2="760" y2="638" stroke="#4fc3f7" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <g>
+    <rect x="500" y="638" width="90" height="46" rx="8" fill="#10141b" stroke="#323b4a"/>
+    <text x="545" y="666" fill="#c9d0dc" font-size="11.5" text-anchor="middle">Claude</text>
+    <rect x="600" y="638" width="90" height="46" rx="8" fill="#10141b" stroke="#323b4a"/>
+    <text x="645" y="666" fill="#c9d0dc" font-size="11.5" text-anchor="middle">GPT</text>
+    <rect x="700" y="638" width="90" height="46" rx="8" fill="#10141b" stroke="#323b4a"/>
+    <text x="745" y="666" fill="#c9d0dc" font-size="11.5" text-anchor="middle">Gemini</text>
+    <rect x="800" y="638" width="130" height="46" rx="8" fill="#10141b" stroke="#323b4a"/>
+    <text x="865" y="666" fill="#c9d0dc" font-size="11.5" text-anchor="middle">Self-hosted OSS</text>
+  </g>
+  <line x1="545" y1="638" x2="700" y2="606" stroke="#323b4a" stroke-width="1"/>
+  <line x1="645" y1="638" x2="720" y2="606" stroke="#323b4a" stroke-width="1"/>
+  <line x1="745" y1="638" x2="760" y2="606" stroke="#323b4a" stroke-width="1"/>
+  <line x1="865" y1="638" x2="800" y2="606" stroke="#323b4a" stroke-width="1"/>
+
+  <!-- ============ EXECUTION PLANE ============ -->
+  <g>
+    <rect x="1090" y="340" width="360" height="70" rx="10" fill="#161b24" stroke="#f2a93b"/>
+    <text x="1270" y="366" fill="#eef1f6" font-size="14" font-weight="600" text-anchor="middle">Sandbox fleet</text>
+    <text x="1270" y="386" fill="#97a1b3" font-size="11" text-anchor="middle">Firecracker microVMs, one per active project</text>
+  </g>
+  <line x1="940" y1="372" x2="1090" y2="372" stroke="#f2a93b" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
+  <text x="945" y="362" fill="#5a6478" font-size="10.5">tool calls: read/write/run</text>
+
+  <line x1="1270" y1="410" x2="1270" y2="446" stroke="#f2a93b" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
+  <g>
+    <rect x="1090" y="446" width="360" height="56" rx="10" fill="#161b24" stroke="#323b4a"/>
+    <text x="1270" y="480" fill="#97a1b3" font-size="12" text-anchor="middle">warm pool · suspend idle · snapshot to S3/R2</text>
+  </g>
+
+  <line x1="1270" y1="410" x2="1270" y2="546" stroke="#4fc3f7" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <g>
+    <rect x="1090" y="546" width="360" height="56" rx="10" fill="#161b24" stroke="#4fc3f7"/>
+    <text x="1270" y="580" fill="#c9d0dc" font-size="12.5" text-anchor="middle">Live preview: {slug}.preview.architect.app</text>
+  </g>
+  <line x1="1090" y1="574" x2="940" y2="240" stroke="#4fc3f7" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+
+  <!-- ============ GITHUB ============ -->
+  <g>
+    <rect x="580" y="720" width="360" height="70" rx="10" fill="#161b24" stroke="#34d399"/>
+    <text x="760" y="748" fill="#eef1f6" font-size="14" font-weight="600" text-anchor="middle">GitHub — GitHub App</text>
+    <text x="760" y="768" fill="#97a1b3" font-size="11" text-anchor="middle">Git Data API commits · push webhook · scoped install tokens</text>
+  </g>
+  <path d="M940,590 L975,590 L975,706 L760,706 L760,720" fill="none" stroke="#34d399" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+
+  <!-- ============ DELIVERY PLANE ============ -->
+  <text x="1120" y="700" fill="#5a6478" font-size="11" letter-spacing="1.5">DELIVERY PLANE</text>
+  <g>
+    <rect x="1090" y="720" width="360" height="70" rx="10" fill="#161b24" stroke="#f2a93b"/>
+    <text x="1270" y="748" fill="#eef1f6" font-size="14" font-weight="600" text-anchor="middle">Deploy pipeline</text>
+    <text x="1270" y="768" fill="#97a1b3" font-size="11" text-anchor="middle">build OCI image (Nixpacks) → registry → target</text>
+  </g>
+  <line x1="1270" y1="602" x2="1270" y2="720" stroke="#f2a93b" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
+
+  <g>
+    <rect x="1090" y="826" width="112" height="50" rx="8" fill="#10141b" stroke="#323b4a"/>
+    <text x="1146" y="856" fill="#c9d0dc" font-size="11.5" text-anchor="middle">Vercel</text>
+    <rect x="1212" y="826" width="112" height="50" rx="8" fill="#10141b" stroke="#323b4a"/>
+    <text x="1268" y="856" fill="#c9d0dc" font-size="11.5" text-anchor="middle">Cloud Run</text>
+    <rect x="1334" y="826" width="112" height="50" rx="8" fill="#10141b" stroke="#323b4a"/>
+    <text x="1390" y="856" fill="#c9d0dc" font-size="11.5" text-anchor="middle">Fly.io</text>
+  </g>
+  <line x1="1146" y1="826" x2="1230" y2="790" stroke="#323b4a" stroke-width="1"/>
+  <line x1="1268" y1="826" x2="1270" y2="790" stroke="#323b4a" stroke-width="1"/>
+  <line x1="1390" y1="826" x2="1310" y2="790" stroke="#323b4a" stroke-width="1"/>
+
+  <!-- ============ LEGEND ============ -->
+  <g transform="translate(80,920)">
+    <rect x="-20" y="-30" width="1160" height="110" rx="10" fill="#0e1319" stroke="#1c2530"/>
+    <text x="0" y="-8" fill="#97a1b3" font-size="12" font-weight="600">Legend</text>
+    <line x1="0" y1="14" x2="40" y2="14" stroke="#4fc3f7" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="48" y="18" fill="#8b93a3" font-size="11.5">control / realtime / preview traffic (through the proxy)</text>
+    <line x1="0" y1="38" x2="40" y2="38" stroke="#f2a93b" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
+    <text x="48" y="42" fill="#8b93a3" font-size="11.5">agent → sandbox tool execution, and deploy pipeline</text>
+    <line x1="0" y1="62" x2="40" y2="62" stroke="#5a6478" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="48" y="66" fill="#8b93a3" font-size="11.5">async / background write (trace persistence, GitHub commit)</text>
+    <text x="540" y="18" fill="#8b93a3" font-size="11.5">Walkthrough: prompt → control API enqueues run → Temporal worker</text>
+    <text x="540" y="38" fill="#8b93a3" font-size="11.5">→ model gateway plans → tool calls hit sandbox via proxy → trace</text>
+    <text x="540" y="58" fill="#8b93a3" font-size="11.5">streams to browser → preview goes live → optional GitHub commit</text>
+    <text x="540" y="78" fill="#8b93a3" font-size="11.5">→ Deploy tab ships a production image separately. See ARCHITECTURE.md.</text>
+  </g>
+</svg>

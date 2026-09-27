@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+/*
+  Design language: "Blueprint" — Architect 2.0 is a tool for drafting
+  software, so the UI borrows from drafting tables: dark technical-paper
+  backgrounds, faint cyan grid lines, and warm pencil-amber for the marks
+  a human (or an agent) actually makes on the page.
+*/
+
+:root {
+  --bg: #0a0d12;
+  --bg-raised: #10141b;
+  --bg-raised-2: #161b24;
+  --bg-overlay: #1c222d;
+
+  --border: #232a36;
+  --border-subtle: #171c25;
+  --border-strong: #323b4a;
+
+  --text: #eef1f6;
+  --text-muted: #97a1b3;
+  --text-faint: #5a6478;
+
+  --accent: #f2a93b;
+  --accent-strong: #ffbf5c;
+  --accent-foreground: #17120a;
+
+  --blue: #4fc3f7;
+  --blue-dim: #2d5b73;
+  --violet: #a78bfa;
+
+  --success: #34d399;
+  --danger: #f87171;
+  --warning: #fbbf24;
+
+  --grid-line: rgba(79, 195, 247, 0.08);
+  --grid-line-strong: rgba(79, 195, 247, 0.16);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-raised: var(--bg-raised);
+  --color-bg-raised-2: var(--bg-raised-2);
+  --color-bg-overlay: var(--bg-overlay);
+
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-blue: var(--blue);
+  --color-blue-dim: var(--blue-dim);
+  --color-violet: var(--violet);
+
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+/* Blueprint grid backdrop, used behind hero / empty-state sections */
+.bp-grid {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.bp-grid-fine {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 8px 8px;
+}
+
+.bp-glow {
+  background: radial-gradient(circle at 50% 0%, rgba(242, 169, 59, 0.16), transparent 60%);
+}
+
+/* thin custom scrollbar for panels */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+
+@keyframes blink-caret {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.caret-blink {
+  animation: blink-caret 1s step-end infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1); }
+}
+.pulse-dot {
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
