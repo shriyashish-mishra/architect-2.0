@@ -6,7 +6,7 @@ terminal, and agent trace and take over yourself. One project, two front doors.
 
 Built for the Lyzr "Architect 2.0" hiring assignment (Technical Product Manager · Architect).
 
-**Live:** _added after deploy_
+**Live:** [architect-20-ten.vercel.app](https://architect-20-ten.vercel.app)
 **Architecture:** [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`architecture-diagram.svg`](./architecture-diagram.svg)
 
 ## What's real vs. simulated
