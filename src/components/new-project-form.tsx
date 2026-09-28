@@ -5,13 +5,13 @@ import { createProject, importProject, listGithubRepos, type GithubReposResult }
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AGENT_FRAMEWORKS, FRAMEWORKS, MODELS, type Framework, type ModelId, type ProjectKind } from "@/lib/architect/types";
-import { ArrowUp, GitFork, Upload, Check, Lock } from "lucide-react";
+import { ArrowUp, GitFork, Upload, Check, Lock, Settings2, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const APP_TEMPLATES = [
-  "A waitlist landing page with a Supabase-backed signup form",
-  "An internal dashboard that summarizes weekly support tickets",
-  "A habit tracker with streaks and a weekly email digest",
+  "A waitlist page for my product launch, with a signup form and a list of who signed up",
+  "A dashboard that summarizes my team's support tickets every week",
+  "A habit tracker with streaks and a weekly email reminder",
 ];
 
 const AGENT_TEMPLATES = [
@@ -33,6 +33,10 @@ export function NewProjectForm() {
   const [model, setModel] = useState<ModelId>("claude");
   const [pending, startTransition] = useTransition();
   const [importOpen, setImportOpen] = useState(false);
+  // Collapsed by default — a first-time, non-technical user should never
+  // have to understand "framework" or "model" to get a good result.
+  // Everyone else can open this and pick exactly what they want.
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const importRef = useRef<HTMLDivElement>(null);
 
@@ -54,22 +58,6 @@ export function NewProjectForm() {
 
   return (
     <div className="w-full">
-      <div className="mb-3 flex items-center justify-center gap-1 rounded-md border border-border-strong p-0.5 text-xs w-fit mx-auto">
-        {(["app", "agent"] as const).map((k) => (
-          <button
-            key={k}
-            type="button"
-            onClick={() => selectKind(k)}
-            className={cn(
-              "rounded px-3 py-1 capitalize transition-colors",
-              kind === k ? "bg-accent text-accent-foreground" : "text-text-muted hover:text-text",
-            )}
-          >
-            Build {k === "app" ? "an app" : "an agent"}
-          </button>
-        ))}
-      </div>
-
       <form
         ref={formRef}
         action={(fd) => startTransition(() => createProject(fd))}
@@ -79,31 +67,23 @@ export function NewProjectForm() {
           name="prompt"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder={kind === "app" ? "Describe the app you want to build…" : "Describe the agent you want to build — what it does, what tools it needs…"}
+          placeholder="Describe what you want, in plain English — Architect figures out the rest."
           rows={3}
           className="w-full resize-none bg-transparent px-5 pt-5 pb-2 text-base outline-none placeholder:text-text-faint"
         />
-        <div className="flex flex-wrap items-center gap-2 border-t border-border-subtle px-4 py-3">
-          <Select
-            value={framework}
-            onChange={(v) => setFramework(v as Framework)}
-            options={frameworkOptions.map((f) => ({ value: f.id, label: f.label }))}
-          />
-          <Select
-            value={model}
-            onChange={(v) => setModel(v as ModelId)}
-            options={MODELS.map((m) => ({ value: m.id, label: m.label }))}
-          />
-          <input type="hidden" name="framework" value={framework} />
-          <input type="hidden" name="model" value={model} />
 
+        <input type="hidden" name="framework" value={framework} />
+        <input type="hidden" name="model" value={model} />
+
+        <div className="flex flex-wrap items-center gap-2 border-t border-border-subtle px-4 py-3">
           <div className="relative" ref={importRef}>
             <button
               type="button"
               onClick={() => setImportOpen((v) => !v)}
               className="flex h-8 items-center gap-1.5 rounded-md border border-border-strong px-2.5 text-xs text-text-muted hover:text-text"
+              title="Already have something built elsewhere? Bring it in."
             >
-              <GitFork className="size-3.5" /> Import repo
+              <GitFork className="size-3.5" /> Import a project
             </button>
             {importOpen && <ImportMenu onClose={() => setImportOpen(false)} />}
           </div>
@@ -112,7 +92,17 @@ export function NewProjectForm() {
             className="flex h-8 items-center gap-1.5 rounded-md border border-border-strong px-2.5 text-xs text-text-muted hover:text-text"
             title="Upload a project zip (coming soon in this demo)"
           >
-            <Upload className="size-3.5" /> Upload project
+            <Upload className="size-3.5" /> Upload
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setAdvancedOpen((v) => !v)}
+            className="flex h-8 items-center gap-1 rounded-md px-2 text-xs text-text-faint hover:text-text-muted"
+            title="Pick a specific framework, model, or build an agent instead of an app"
+          >
+            <Settings2 className="size-3.5" /> Advanced
+            <ChevronDown className={cn("size-3 transition-transform", advancedOpen && "rotate-180")} />
           </button>
 
           <div className="ml-auto">
@@ -127,7 +117,41 @@ export function NewProjectForm() {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 border-t border-border-subtle px-4 py-3">
+        {advancedOpen && (
+          <div className="flex flex-wrap items-center gap-2 border-t border-border-subtle bg-bg/40 px-4 py-3">
+            <span className="text-xs text-text-faint">Building</span>
+            <div className="flex items-center rounded-md border border-border-strong p-0.5 text-xs">
+              {(["app", "agent"] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => selectKind(k)}
+                  className={cn(
+                    "rounded px-2.5 py-1 transition-colors",
+                    kind === k ? "bg-accent text-accent-foreground" : "text-text-muted hover:text-text",
+                  )}
+                >
+                  {k === "app" ? "an app" : "an agent"}
+                </button>
+              ))}
+            </div>
+            <span className="ml-2 text-xs text-text-faint">using</span>
+            <Select
+              value={framework}
+              onChange={(v) => setFramework(v as Framework)}
+              options={frameworkOptions.map((f) => ({ value: f.id, label: f.label }))}
+            />
+            <span className="text-xs text-text-faint">with</span>
+            <Select
+              value={model}
+              onChange={(v) => setModel(v as ModelId)}
+              options={MODELS.map((m) => ({ value: m.id, label: m.label }))}
+            />
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-2 border-t border-border-subtle px-4 py-3">
+          <span className="mr-1 text-xs text-text-faint">Not sure? Try:</span>
           {templates.map((t) => (
             <button
               key={t}

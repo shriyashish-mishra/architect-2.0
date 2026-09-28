@@ -10,9 +10,12 @@ const DEPLOY_STEPS = ["Building", "Provisioning sandbox", "Deploying", "Live"];
 export function DeployPanel({
   deployUrl,
   onDeploy,
+  simple = false,
 }: {
   deployUrl: string | null;
   onDeploy: () => Promise<void>;
+  /** Vibe mode: hide env vars and technical framing — just a button and a URL. */
+  simple?: boolean;
 }) {
   const [deploying, setDeploying] = useState(false);
   const [stepIndex, setStepIndex] = useState(-1);
@@ -32,37 +35,40 @@ export function DeployPanel({
 
   return (
     <div className="scrollbar-thin flex h-full flex-col gap-6 overflow-y-auto p-5">
-      <div>
-        <h3 className="text-sm font-medium text-text-muted">Environment variables</h3>
-        <div className="mt-2 space-y-2">
-          {envVars.map((v, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <input
-                readOnly
-                value={v.key}
-                className="h-8 flex-1 rounded-md border border-border-strong bg-bg px-2 font-mono text-xs"
-              />
-              <input
-                readOnly
-                value={v.value}
-                className="h-8 flex-1 rounded-md border border-border-strong bg-bg px-2 font-mono text-xs"
-              />
-              <button
-                onClick={() => setEnvVars((prev) => prev.filter((_, idx) => idx !== i))}
-                className="rounded-md p-1.5 text-text-faint hover:text-danger"
-              >
-                <X className="size-3.5" />
-              </button>
-            </div>
-          ))}
-          <button
-            onClick={() => setEnvVars((prev) => [...prev, { key: "NEW_VAR", value: "" }])}
-            className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text"
-          >
-            <Plus className="size-3.5" /> Add variable
-          </button>
+      {!simple && (
+        <div>
+          <h3 className="text-sm font-medium text-text-muted">Environment variables</h3>
+          <p className="mt-1 text-xs text-text-faint">Secrets and config your app needs at runtime.</p>
+          <div className="mt-2 space-y-2">
+            {envVars.map((v, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input
+                  readOnly
+                  value={v.key}
+                  className="h-8 flex-1 rounded-md border border-border-strong bg-bg px-2 font-mono text-xs"
+                />
+                <input
+                  readOnly
+                  value={v.value}
+                  className="h-8 flex-1 rounded-md border border-border-strong bg-bg px-2 font-mono text-xs"
+                />
+                <button
+                  onClick={() => setEnvVars((prev) => prev.filter((_, idx) => idx !== i))}
+                  className="rounded-md p-1.5 text-text-faint hover:text-danger"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => setEnvVars((prev) => [...prev, { key: "NEW_VAR", value: "" }])}
+              className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text"
+            >
+              <Plus className="size-3.5" /> Add variable
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       <div>
         <h3 className="text-sm font-medium text-text-muted">Deploy</h3>
@@ -100,8 +106,9 @@ export function DeployPanel({
           <Rocket className="size-4" /> {deployUrl ? "Redeploy" : deploying ? "Deploying…" : "Deploy"}
         </Button>
         <p className="mt-2 text-xs text-text-faint">
-          Deploys build the sandbox&apos;s current file state into a production container and
-          point a stable URL at it. See ARCHITECTURE.md for how this maps to real infra.
+          {simple
+            ? "Puts your app on the internet at a real, shareable link. You can do this as many times as you like."
+            : "Deploys build the sandbox's current file state into a production container and point a stable URL at it. See ARCHITECTURE.md for how this maps to real infra."}
         </p>
       </div>
     </div>

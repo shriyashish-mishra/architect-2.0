@@ -194,21 +194,25 @@ export function Workspace({
         <Badge tone={STATUS_TONE[status]}>{status}</Badge>
 
         <div className="ml-auto flex items-center gap-2">
-          <select
-            value={model}
-            onChange={(e) => updateModel(e.target.value as ModelId)}
-            className="h-8 rounded-md border border-border-strong bg-bg px-2 text-xs text-text-muted outline-none hover:text-text"
-          >
-            {MODELS.map((m) => (
-              <option key={m.id} value={m.id}>{m.label}</option>
-            ))}
-          </select>
+          {mode === "pro" && (
+            <select
+              value={model}
+              onChange={(e) => updateModel(e.target.value as ModelId)}
+              title="Which AI model builds this project"
+              className="h-8 rounded-md border border-border-strong bg-bg px-2 text-xs text-text-muted outline-none hover:text-text"
+            >
+              {MODELS.map((m) => (
+                <option key={m.id} value={m.id}>{m.label}</option>
+              ))}
+            </select>
+          )}
 
           <div className="flex items-center rounded-md border border-border-strong p-0.5 text-xs">
             {(["vibe", "pro"] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => updateMode(m)}
+                title={m === "vibe" ? "Simple mode — just chat and preview" : "Developer mode — code, terminal, and full agent detail"}
                 className={cn(
                   "rounded px-2.5 py-1 capitalize transition-colors",
                   mode === m ? "bg-accent text-accent-foreground" : "text-text-muted hover:text-text",
@@ -223,7 +227,7 @@ export function Workspace({
 
       <div className="grid min-h-0 flex-1 grid-cols-[380px_1fr]">
         <div className="min-h-0 border-r border-border-subtle">
-          <ChatPanel messages={messages} isBuilding={isBuilding} onSend={handleSend} />
+          <ChatPanel messages={messages} isBuilding={isBuilding} onSend={handleSend} technical={mode === "pro"} />
         </div>
 
         <div className="flex min-h-0 flex-col">
@@ -249,7 +253,7 @@ export function Workspace({
             {effectiveTab === "code" && <CodePanel files={files} projectName={name} />}
             {effectiveTab === "agent" && <AgentPanel messages={messages} model={MODELS.find((m) => m.id === model)?.label ?? model} isBuilding={isBuilding} />}
             {effectiveTab === "github" && <GitForkPanel repo={githubRepo} onConnect={connectGitFork} />}
-            {effectiveTab === "deploy" && <DeployPanel deployUrl={deployUrl} onDeploy={deploy} />}
+            {effectiveTab === "deploy" && <DeployPanel deployUrl={deployUrl} onDeploy={deploy} simple={mode === "vibe"} />}
           </div>
         </div>
       </div>

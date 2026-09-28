@@ -18,10 +18,12 @@ import { GitFork } from "lucide-react";
 
 type Tab = "preview" | "code" | "agent" | "github" | "deploy";
 
-const DEMO_PROJECT_NAME = "Support Triage Agent";
+// Leads with the simple, non-technical path — the whole point of Vibe
+// mode is that this is what "anyone" sees first, not an engineer's example.
+const DEMO_PROJECT_NAME = "Bakery Waitlist";
 const DEMO_PROMPT =
-  "Build a support agent that reads incoming tickets, checks our docs for the answer, and drafts a reply — escalating to a human when it isn't confident.";
-const DEMO_FRAMEWORK = "langgraph";
+  "A waitlist landing page for my bakery's grand opening, with a signup form and a simple admin page to see who signed up.";
+const DEMO_FRAMEWORK = "nextjs";
 const DEMO_ID = "demo";
 const DEMO_USER = "demo";
 
@@ -33,7 +35,7 @@ function localId() {
 
 export function DemoWorkspace() {
   const [messages, setMessages] = useState<ProjectMessage[]>([]);
-  const [mode, setMode] = useState<WorkspaceMode>("pro");
+  const [mode, setMode] = useState<WorkspaceMode>("vibe");
   const [model, setModel] = useState<ModelId>("claude");
   const [status, setStatus] = useState<"draft" | "building" | "ready" | "deployed">("draft");
   const [githubRepo, setGithubRepo] = useState<string | null>(null);
@@ -92,12 +94,12 @@ export function DemoWorkspace() {
 
   async function connectGithub() {
     await new Promise((r) => setTimeout(r, 1000));
-    setGithubRepo("shriyashish-mishra/support-triage-agent");
+    setGithubRepo("shriyashish-mishra/bakery-waitlist");
   }
 
   async function deploy() {
     await new Promise((r) => setTimeout(r, 300));
-    setDeployUrl("support-triage-agent.architect.app");
+    setDeployUrl("bakery-waitlist.architect.app");
     setStatus("deployed");
   }
 
@@ -143,20 +145,24 @@ export function DemoWorkspace() {
         <Badge tone={STATUS_TONE[status]}>{status}</Badge>
 
         <div className="ml-auto flex items-center gap-2">
-          <select
-            value={model}
-            onChange={(e) => setModel(e.target.value as ModelId)}
-            className="h-8 rounded-md border border-border-strong bg-bg px-2 text-xs text-text-muted outline-none hover:text-text"
-          >
-            {MODELS.map((m) => (
-              <option key={m.id} value={m.id}>{m.label}</option>
-            ))}
-          </select>
+          {mode === "pro" && (
+            <select
+              value={model}
+              onChange={(e) => setModel(e.target.value as ModelId)}
+              title="Which AI model builds this project"
+              className="h-8 rounded-md border border-border-strong bg-bg px-2 text-xs text-text-muted outline-none hover:text-text"
+            >
+              {MODELS.map((m) => (
+                <option key={m.id} value={m.id}>{m.label}</option>
+              ))}
+            </select>
+          )}
           <div className="flex items-center rounded-md border border-border-strong p-0.5 text-xs">
             {(["vibe", "pro"] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
+                title={m === "vibe" ? "Simple mode — just chat and preview" : "Developer mode — code, terminal, and full agent detail"}
                 className={cn(
                   "rounded px-2.5 py-1 capitalize transition-colors",
                   mode === m ? "bg-accent text-accent-foreground" : "text-text-muted hover:text-text",
@@ -171,7 +177,7 @@ export function DemoWorkspace() {
 
       <div className="grid min-h-0 flex-1 grid-cols-[380px_1fr]">
         <div className="min-h-0 border-r border-border-subtle">
-          <ChatPanel messages={messages} isBuilding={isBuilding} onSend={handleSend} />
+          <ChatPanel messages={messages} isBuilding={isBuilding} onSend={handleSend} technical={mode === "pro"} />
         </div>
 
         <div className="flex min-h-0 flex-col">
@@ -192,12 +198,12 @@ export function DemoWorkspace() {
 
           <div className="min-h-0 flex-1">
             {effectiveTab === "preview" && (
-              <PreviewPanel title={DEMO_PROJECT_NAME} description={previewDescription} isBuilding={isBuilding} slug="support-triage-agent" isAgent={isAgentFramework(DEMO_FRAMEWORK)} />
+              <PreviewPanel title={DEMO_PROJECT_NAME} description={previewDescription} isBuilding={isBuilding} slug="bakery-waitlist" isAgent={isAgentFramework(DEMO_FRAMEWORK)} />
             )}
             {effectiveTab === "code" && <CodePanel files={files} projectName={DEMO_PROJECT_NAME} />}
             {effectiveTab === "agent" && <AgentPanel messages={messages} model={MODELS.find((m) => m.id === model)?.label ?? model} isBuilding={isBuilding} />}
             {effectiveTab === "github" && <GitForkPanel repo={githubRepo} onConnect={connectGithub} />}
-            {effectiveTab === "deploy" && <DeployPanel deployUrl={deployUrl} onDeploy={deploy} />}
+            {effectiveTab === "deploy" && <DeployPanel deployUrl={deployUrl} onDeploy={deploy} simple={mode === "vibe"} />}
           </div>
         </div>
       </div>
