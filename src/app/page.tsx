@@ -21,6 +21,8 @@ import {
   X,
   Link2,
   Globe,
+  Zap,
+  PlayCircle,
 } from "lucide-react";
 
 const AUDIENCES = [
@@ -69,6 +71,11 @@ const FEATURES = [
     title: "Built for teams",
     body: "Non-technical PMs and engineers work in the same project, each in the view that fits them.",
   },
+  {
+    icon: Zap,
+    title: "Token-efficient by design",
+    body: "RTK compresses tool output 60-90% before the agent reads it; OKF grounds it in explicit, git-native project knowledge instead of a vector-DB guess. See the library.",
+  },
 ];
 
 type Mark = "yes" | "partial" | "no";
@@ -82,6 +89,7 @@ const COMPARISON: { capability: string; architect: Mark; nonTechnical: Mark; tec
   { capability: "Import an existing project and keep working in it", architect: "yes", nonTechnical: "partial", technical: "yes", replit: "yes" },
   { capability: "Real auth + database wired up out of the box", architect: "yes", nonTechnical: "partial", technical: "no", replit: "partial" },
   { capability: "One-click deploy to a live URL", architect: "yes", nonTechnical: "yes", technical: "no", replit: "yes" },
+  { capability: "Token-efficient context (RTK-compressed tool output + OKF-grounded knowledge)", architect: "yes", nonTechnical: "no", technical: "no", replit: "no" },
 ];
 
 const COMPARISON_COLUMNS = [
@@ -117,6 +125,9 @@ export default function Home() {
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-5">
           <Logo />
           <nav className="hidden items-center gap-6 text-sm text-text-muted md:flex">
+            <Link href="/demo" className="flex items-center gap-1 text-accent hover:underline">
+              <PlayCircle className="size-3.5" /> Live demo
+            </Link>
             <a href="#features" className="hover:text-text">Features</a>
             <a href="#audiences" className="hover:text-text">Who it&apos;s for</a>
             <a href="#compare" className="hover:text-text">Compare</a>
@@ -150,12 +161,20 @@ export default function Home() {
             <Link href="/auth/sign-up">
               <Button size="lg">Start building free <ArrowRight className="size-4" /></Button>
             </Link>
+            <Link href="/demo">
+              <Button size="lg" variant="secondary"><PlayCircle className="size-4" /> Watch it build something live</Button>
+            </Link>
             <Link href="/auth/sign-in">
               <Button size="lg" variant="outline">I have an account</Button>
             </Link>
           </div>
+          <p className="mt-3 text-xs text-text-faint">The live demo needs no sign-up — see the whole build → deploy flow in under a minute.</p>
 
-          <Card className="mt-16 w-full max-w-3xl overflow-hidden text-left shadow-2xl shadow-black/40">
+          <Link href="/demo" className="mt-16 block w-full max-w-3xl">
+          <Card className="group relative overflow-hidden text-left shadow-2xl shadow-black/40 transition-colors hover:border-accent/40">
+            <div className="absolute right-4 top-3 z-10 flex items-center gap-1.5 rounded-full border border-accent/30 bg-bg/90 px-2.5 py-1 text-xs text-accent opacity-0 backdrop-blur transition-opacity group-hover:opacity-100">
+              <PlayCircle className="size-3.5" /> Try this live
+            </div>
             <div className="flex items-center gap-2 border-b border-border px-4 py-3">
               <span className="size-2.5 rounded-full bg-danger/60" />
               <span className="size-2.5 rounded-full bg-warning/60" />
@@ -172,6 +191,7 @@ export default function Home() {
               <p className="mt-1 text-success">✓ Build passed · preview live</p>
             </div>
           </Card>
+          </Link>
         </div>
       </section>
 

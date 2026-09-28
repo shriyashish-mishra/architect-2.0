@@ -91,10 +91,47 @@ One workflow execution = one agent turn. Its loop:
    the run complete, and (if GitHub is connected) kicks off a commit as a separate, non-blocking
    step.
 
-**Context management:** rather than replaying the whole conversation to the model every turn
-(expensive and eventually exceeds context limits), the harness keeps a rolling summary of the
-project plus only the diffs since the last turn, and re-reads specific files on demand via
-`read_file` when the model asks — the same pattern real coding agents (Claude Code, Cursor) use.
+### Context management: two problems, two tools
+
+Rather than replaying the whole conversation to the model every turn (expensive and eventually
+exceeds context limits), the harness keeps a rolling summary of the project plus only the diffs
+since the last turn, and re-reads specific files on demand via `read_file` when the model asks —
+the same pattern real coding agents (Claude Code, Cursor) use. Underneath that pattern are two
+more specific optimizations, because "context" here is really two different problems: the noise
+from *running* things, and the grounding from *knowing* things.
+
+**The noise problem — [RTK](https://github.com/rtk-ai/rtk).** Every tool call in the loop above
+(`run_command`, `read_file`, a build, a test run) can return output an order of magnitude larger
+than what the model actually needs — a full `git diff`, a verbose test runner, a `find` across a
+big repo. RTK is a single Rust binary that sits between the sandbox and the model in the proxy's
+exec path and compresses that output *before* it's returned as a tool result: tree-format
+directory listings instead of one line per file, signatures-over-bodies for `read_file`, grouped
+and truncated `grep`/`git diff` output, hash-author-subject-only `git log`. It claims 60-90% fewer
+tokens on common dev commands for effectively zero latency (<10ms), which compounds hard in an
+agent loop that might make dozens of tool calls per turn — that's the difference between an agent
+that can afford to `git diff` liberally to double-check its own work, and one that has to ration
+tool calls to stay in budget. This demo's Agent tab includes an `rtk: compressing tool output`
+step in the trace to make this visible, but it isn't literally running (there's no real sandbox
+behind this demo) — it's a specified part of the harness, not a simulated feature of its own.
+
+**The grounding problem — [OKF](https://github.com/okf-memory/okf-agent-memory) (Google's Open
+Knowledge Format).** Once a project has any history, the agent needs to know things about it that
+aren't in the code — decisions, conventions, "we tried X, it didn't work." The obvious answer is
+RAG: chunk the docs, embed them, retrieve by similarity at query time. The problem with that here
+specifically is that similarity search *infers* relationships, and an agent debugging *why* a
+decision was made needs the relationship, not a plausible-looking neighbor. OKF stores knowledge
+as plain Markdown files with lightweight YAML frontmatter and *explicit*, author-written links
+between concepts — no embeddings, no vector DB, no proprietary format. Every Architect project
+keeps this at `.architect/knowledge/`, versioned in the same repo as the code it describes, so
+it's diffable and reviewable exactly like everything else the agent touches. Two places this
+shows up concretely: when a project is created, the harness seeds this folder from the plan it
+just wrote; when a project is *imported* (§7), it's the first real step after the clone —
+converting the repo's existing README/docs into an OKF bundle so the agent starts grounded in
+what's already true about the codebase, instead of guessing from the file tree alone. The
+`Grounding in OKF` step in the demo's import trace makes this visible the same way RTK's step
+does — real in the architecture, simulated in the click-through.
+
+Both are listed with integration steps in `/app/library` in this repo's own product surface.
 
 ---
 
@@ -257,3 +294,7 @@ real scaling problems are the other two planes:
 - A deterministic client-side simulation (`src/lib/architect/agent-sim.ts`) standing in for the
   real agent harness described above, so every flow is genuinely interactive rather than a static
   mockup.
+- Two concrete, current context-optimization techniques wired into the harness design — RTK
+  (§3, tool-output compression) and OKF (§3, explicit git-native knowledge grounding) — both
+  reflected in the demo's build/import trace and cataloged with integration steps at
+  `/app/library`.

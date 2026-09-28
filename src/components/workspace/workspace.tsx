@@ -46,7 +46,7 @@ export function Workspace({
   const [githubRepo, setGitForkRepo] = useState(project.github_repo);
   const [deployUrl, setDeployUrl] = useState(project.deploy_url);
   const [files, setFiles] = useState<FileNode[]>([]);
-  const [preview, setPreview] = useState({ title: project.name, description: "" });
+  const [previewDescription, setPreviewDescription] = useState("");
   const [isBuilding, setIsBuilding] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("preview");
   const ran = useRef(false);
@@ -90,7 +90,7 @@ export function Workspace({
     setIsBuilding(true);
     await setProjectStatus("building");
     setFiles(plan.files);
-    setPreview({ title: plan.previewTitle, description: plan.previewDescription });
+    setPreviewDescription(plan.previewDescription);
 
     for (const step of plan.trace) {
       await persistMessage("agent", `${step.title}\n${step.detail}`, step.kind);
@@ -127,7 +127,7 @@ export function Workspace({
         runPlan(initialPlan);
       } else {
         setFiles(initialPlan.files);
-        setPreview({ title: initialPlan.previewTitle, description: initialPlan.previewDescription });
+        setPreviewDescription(initialPlan.previewDescription);
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -244,7 +244,7 @@ export function Workspace({
 
           <div className="min-h-0 flex-1">
             {effectiveTab === "preview" && (
-              <PreviewPanel title={preview.title || name} description={preview.description} isBuilding={isBuilding} slug={slug} isAgent={isAgentFramework(project.framework)} />
+              <PreviewPanel title={name} description={previewDescription} isBuilding={isBuilding} slug={slug} isAgent={isAgentFramework(project.framework)} />
             )}
             {effectiveTab === "code" && <CodePanel files={files} projectName={name} />}
             {effectiveTab === "agent" && <AgentPanel messages={messages} model={MODELS.find((m) => m.id === model)?.label ?? model} isBuilding={isBuilding} />}

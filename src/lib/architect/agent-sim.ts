@@ -40,7 +40,7 @@ function id() {
   return `t_${Date.now()}_${counter}`;
 }
 
-const AGENT_FRAMEWORK_IDS = new Set(["langgraph", "crewai", "autogen", "llamaindex", "agent-other"]);
+const AGENT_FRAMEWORK_IDS = new Set(["langgraph", "crewai", "autogen", "llamaindex", "mcp", "agent-other"]);
 export function isAgentFramework(framework: string): boolean {
   return AGENT_FRAMEWORK_IDS.has(framework);
 }
@@ -101,6 +101,13 @@ export function generateBuildPlan(prompt: string, framework: string): BuildPlan 
       title: "sandbox.create()",
       detail: `Provisioning an isolated dev sandbox (${framework}, Node 22) with a live preview URL.`,
       durationMs: 1200,
+    },
+    {
+      id: id(),
+      kind: "info",
+      title: "rtk: compressing tool output",
+      detail: "Every command this sandbox runs is piped through RTK (rtk-ai/rtk) before I read it — cuts stdout/file-read volume 60-90% before it touches my context, so a long build log or `git diff` doesn't burn the budget I need for actually reasoning about your app.",
+      durationMs: 400,
     },
     {
       id: id(),
@@ -188,6 +195,7 @@ const AGENT_FRAMEWORK_LABELS: Record<string, string> = {
   crewai: "CrewAI",
   autogen: "AutoGen",
   llamaindex: "LlamaIndex",
+  mcp: "MCP",
   "agent-other": "your agent framework",
 };
 
@@ -237,6 +245,13 @@ function generateAgentPlan(prompt: string, framework: string): BuildPlan {
       title: "sandbox.create()",
       detail: `Provisioning an isolated Python sandbox (${fwLabel}, Python 3.12) — agents run headless, so there's no browser preview, just live logs.`,
       durationMs: 1200,
+    },
+    {
+      id: id(),
+      kind: "info",
+      title: "rtk: compressing tool output",
+      detail: "Piping every command through RTK (rtk-ai/rtk) before I read it — 60-90% less tool-call token cost, which matters even more here since agent loops make a lot more tool calls than a one-shot app build.",
+      durationMs: 400,
     },
     {
       id: id(),
@@ -361,6 +376,13 @@ export function generateImportPlan(repoName: string, framework: string): BuildPl
       title: "Reading the existing structure",
       detail: `Indexing ${repoName}: routes, components, an existing "agents/" module, and a CI workflow. Building a map of the codebase before touching anything.`,
       durationMs: 1100,
+    },
+    {
+      id: id(),
+      kind: "info",
+      title: "Grounding in OKF",
+      detail: `Converting ${repoName}'s README and docs into an OKF bundle (.architect/knowledge/) — plain Markdown with explicit links between concepts, not a vector index, so what I know about this repo stays readable and diffable right next to the code.`,
+      durationMs: 500,
     },
     {
       id: id(),

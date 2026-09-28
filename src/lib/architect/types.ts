@@ -1,8 +1,10 @@
 export type Framework =
   | "nextjs" | "react" | "python" | "node" | "other"
-  | "langgraph" | "crewai" | "autogen" | "llamaindex" | "agent-other";
+  | "langgraph" | "crewai" | "autogen" | "llamaindex" | "mcp" | "agent-other";
 export type ProjectKind = "app" | "agent";
-export type ModelId = "claude" | "gpt" | "gemini" | "groq" | "mistral" | "deepseek" | "oss";
+export type ModelId =
+  | "claude" | "gpt" | "gemini" | "groq" | "mistral" | "deepseek"
+  | "grok" | "perplexity" | "openrouter" | "oss";
 export type WorkspaceMode = "vibe" | "pro";
 export type ProjectStatus = "draft" | "building" | "ready" | "deployed" | "error";
 export type MessageRole = "user" | "agent" | "system";
@@ -40,6 +42,9 @@ export const MODELS: { id: ModelId; label: string; vendor: string }[] = [
   { id: "groq", label: "Llama 3.3 70B on Groq", vendor: "Groq" },
   { id: "mistral", label: "Mistral Large", vendor: "Mistral AI" },
   { id: "deepseek", label: "DeepSeek V3", vendor: "DeepSeek" },
+  { id: "grok", label: "Grok 4", vendor: "xAI" },
+  { id: "perplexity", label: "Sonar", vendor: "Perplexity" },
+  { id: "openrouter", label: "Any model via OpenRouter", vendor: "OpenRouter" },
   { id: "oss", label: "Llama 3.3 (self-hosted via Ollama)", vendor: "Open source" },
 ];
 
@@ -58,5 +63,6 @@ export const AGENT_FRAMEWORKS: { id: Framework; label: string }[] = [
   { id: "crewai", label: "CrewAI" },
   { id: "autogen", label: "AutoGen" },
   { id: "llamaindex", label: "LlamaIndex" },
+  { id: "mcp", label: "MCP (Model Context Protocol) server" },
   { id: "agent-other", label: "Other / custom agent framework" },
 ];
