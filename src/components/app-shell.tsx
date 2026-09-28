@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 import { signOut } from "@/app/auth/actions";
-import { Home, Settings, LogOut, Sparkles } from "lucide-react";
+import { Home, Settings, LogOut, Sparkles, Library } from "lucide-react";
 
 export function AppShell({
   user,
@@ -19,6 +19,7 @@ export function AppShell({
 
         <nav className="flex flex-1 flex-col gap-0.5 p-3">
           <NavLink href="/app" icon={Home}>Home</NavLink>
+          <NavLink href="/app/library" icon={Library}>Library</NavLink>
           <NavLink href="/app/settings" icon={Settings}>Settings</NavLink>
         </nav>
 

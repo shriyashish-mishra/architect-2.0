@@ -4,21 +4,20 @@ A vibe-coding platform for both non-technical builders and engineers: describe a
 language and watch it get planned, built, and previewed live — or drop into a real file tree,
 terminal, and agent trace and take over yourself. One project, two front doors.
 
-Built for the Lyzr "Architect 2.0" hiring assignment (Technical Product Manager · Architect).
-
 **Live:** [architect-20-ten.vercel.app](https://architect-20-ten.vercel.app)
 **Architecture:** [`ARCHITECTURE.md`](./ARCHITECTURE.md) · [`architecture-diagram.svg`](./architecture-diagram.svg)
 
 ## What's real vs. simulated
 
-This is a product/UX prototype, not a production agent platform — the assignment explicitly
-allows (and rewards) dummy flows, so here's exactly where the line is:
+This is a product/UX prototype, not a production agent platform — dummy flows are used
+deliberately in a few places, so here's exactly where the line is:
 
 **Real and working:**
-- Auth — email/password and anonymous "guest" sign-in, via Supabase Auth
+- Auth — email/password, GitHub OAuth, and anonymous "guest" sign-in, via Supabase Auth
 - A real Postgres database (Supabase) with Row Level Security: every project and every chat/agent
   trace message is actually written and read per-user, not mocked in local component state
-- The full navigation, every screen, and every flow in the assignment's feature list
+- "Import repo" pulls your real GitHub repos via the GitHub API once you're signed in with GitHub
+- The full navigation and every screen and flow of a vibe-coding platform, front to back
 
 **Simulated (by design — see `src/lib/architect/agent-sim.ts`):**
 - The agent's plan/build/error/recover trace, the generated file tree and code, the live preview,
@@ -89,5 +88,3 @@ one URL, not an export.
 
 **Shriyashish Mishra** — Product Manager, 3+ years building AI-powered and B2B SaaS products.
 [LinkedIn](https://linkedin.com/in/shriyashish-mishra) · [Portfolio](https://shriyashish.lovable.app) · [GitHub](https://github.com/shriyashish-mishra)
-
-Built for the Lyzr **Architect 2.0** hiring assignment (Technical Product Manager · Architect).

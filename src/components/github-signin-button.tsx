@@ -15,7 +15,14 @@ export function GithubSignInButton({ next = "/app" }: { next?: string }) {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "github",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        // Supabase's default GitHub scope is just `user:email` — that's not
+        // enough to list repos. Ask for `repo` explicitly (needed to see
+        // private repos too) so the token this returns can actually back
+        // the "Import repo" picker.
+        scopes: "read:user user:email repo",
+      },
     });
     if (error) {
       setError(error.message);

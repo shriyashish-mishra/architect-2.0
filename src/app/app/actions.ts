@@ -13,23 +13,41 @@ export interface GithubRepo {
   updatedAt: string;
 }
 
+export type GithubReposResult =
+  | { status: "no_token" }
+  | { status: "error"; message: string }
+  | { status: "ok"; repos: GithubRepo[] };
+
 // Real (not simulated): lists the signed-in user's own GitHub repos via the
 // GitHub API, using the OAuth provider token captured at /auth/callback.
-// Returns null (rather than []) when there's no token, so the UI can tell
-// "connected, zero repos" apart from "not connected via GitHub at all".
-export async function listGithubRepos(): Promise<GithubRepo[] | null> {
+// Distinguishes "never signed in with GitHub" from "signed in, but the API
+// call failed" — silently collapsing those into one fallback made a real
+// failure (bad scope, expired token, rate limit) look identical to a guest
+// session, which is exactly what made this hard to debug last time.
+export async function listGithubRepos(): Promise<GithubReposResult> {
   const token = (await cookies()).get("gh_token")?.value;
-  if (!token) return null;
+  if (!token) return { status: "no_token" };
 
-  const res = await fetch("https://api.github.com/user/repos?sort=updated&per_page=15", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-    },
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await fetch("https://api.github.com/user/repos?sort=updated&per_page=15&affiliation=owner,collaborator", {
+      headers: {
+        // GitHub's OAuth App (as opposed to GitHub App) tokens are the
+        // classic format — `token <token>`, not `Bearer <token>`.
+        Authorization: `token ${token}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+      cache: "no-store",
+    });
+  } catch (e) {
+    return { status: "error", message: e instanceof Error ? e.message : "Network error reaching GitHub" };
+  }
 
-  if (!res.ok) return null;
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    return { status: "error", message: `GitHub API ${res.status}: ${body.slice(0, 200) || res.statusText}` };
+  }
 
   const repos = (await res.json()) as Array<{
     full_name: string;
@@ -38,12 +56,15 @@ export async function listGithubRepos(): Promise<GithubRepo[] | null> {
     updated_at: string;
   }>;
 
-  return repos.map((r) => ({
-    fullName: r.full_name,
-    name: r.name,
-    private: r.private,
-    updatedAt: r.updated_at,
-  }));
+  return {
+    status: "ok",
+    repos: repos.map((r) => ({
+      fullName: r.full_name,
+      name: r.name,
+      private: r.private,
+      updatedAt: r.updated_at,
+    })),
+  };
 }
 
 function titleFromPrompt(prompt: string): string {

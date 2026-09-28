@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { createProject, importProject, listGithubRepos, type GithubRepo } from "@/app/app/actions";
+import { createProject, importProject, listGithubRepos, type GithubReposResult } from "@/app/app/actions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AGENT_FRAMEWORKS, FRAMEWORKS, MODELS, type Framework, type ModelId, type ProjectKind } from "@/lib/architect/types";
@@ -149,12 +149,10 @@ export function NewProjectForm() {
 function ImportMenu({ onClose }: { onClose: () => void }) {
   const [pending, startTransition] = useTransition();
   const [picked, setPicked] = useState<string | null>(null);
-  // undefined = still loading; null = no GitHub account connected (fall
-  // back to the illustrative list); array = your real repos.
-  const [repos, setRepos] = useState<GithubRepo[] | null | undefined>(undefined);
+  const [result, setResult] = useState<GithubReposResult | undefined>(undefined);
 
   useEffect(() => {
-    listGithubRepos().then(setRepos);
+    listGithubRepos().then(setResult);
   }, []);
 
   function pick(repo: string) {
@@ -165,9 +163,9 @@ function ImportMenu({ onClose }: { onClose: () => void }) {
     startTransition(() => importProject(fd));
   }
 
-  const isReal = Array.isArray(repos);
+  const isReal = result?.status === "ok";
   const items = isReal
-    ? repos
+    ? result.repos
     : FAKE_REPOS.map((full) => ({ fullName: full, name: full.split("/")[1], private: false, updatedAt: "" }));
 
   return (
@@ -175,15 +173,19 @@ function ImportMenu({ onClose }: { onClose: () => void }) {
       <p className="flex items-center justify-between px-2 py-1.5 text-[11px] uppercase tracking-wider text-text-faint">
         <span>{isReal ? "Your GitHub repos" : "Example repos"}</span>
         {isReal && <Badge tone="success">connected</Badge>}
+        {result?.status === "error" && <Badge tone="danger">error</Badge>}
       </p>
-      {!isReal && (
+      {result?.status === "no_token" && (
         <p className="px-2 pb-1.5 text-[11px] text-text-faint">
           Illustrative — sign in with GitHub to import your real repos.
         </p>
       )}
-      {repos === undefined ? (
+      {result?.status === "error" && (
+        <p className="px-2 pb-1.5 text-[11px] text-danger">{result.message}</p>
+      )}
+      {result === undefined ? (
         <p className="px-2 py-2 text-xs text-text-faint">Loading…</p>
-      ) : isReal && repos.length === 0 ? (
+      ) : isReal && result.repos.length === 0 ? (
         <p className="px-2 py-2 text-xs text-text-faint">No repos found on your account.</p>
       ) : (
         items.map((repo) => (

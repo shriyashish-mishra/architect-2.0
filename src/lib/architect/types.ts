@@ -2,7 +2,7 @@ export type Framework =
   | "nextjs" | "react" | "python" | "node" | "other"
   | "langgraph" | "crewai" | "autogen" | "llamaindex" | "agent-other";
 export type ProjectKind = "app" | "agent";
-export type ModelId = "claude" | "gpt" | "gemini" | "oss";
+export type ModelId = "claude" | "gpt" | "gemini" | "groq" | "mistral" | "deepseek" | "oss";
 export type WorkspaceMode = "vibe" | "pro";
 export type ProjectStatus = "draft" | "building" | "ready" | "deployed" | "error";
 export type MessageRole = "user" | "agent" | "system";
@@ -37,7 +37,10 @@ export const MODELS: { id: ModelId; label: string; vendor: string }[] = [
   { id: "claude", label: "Claude Sonnet 5", vendor: "Anthropic" },
   { id: "gpt", label: "GPT-5.1", vendor: "OpenAI" },
   { id: "gemini", label: "Gemini 3 Pro", vendor: "Google" },
-  { id: "oss", label: "Llama 4 (self-hosted)", vendor: "Open source" },
+  { id: "groq", label: "Llama 3.3 70B on Groq", vendor: "Groq" },
+  { id: "mistral", label: "Mistral Large", vendor: "Mistral AI" },
+  { id: "deepseek", label: "DeepSeek V3", vendor: "DeepSeek" },
+  { id: "oss", label: "Llama 3.3 (self-hosted via Ollama)", vendor: "Open source" },
 ];
 
 export const FRAMEWORKS: { id: Framework; label: string }[] = [

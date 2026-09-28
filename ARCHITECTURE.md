@@ -7,8 +7,8 @@ repo.
 
 The demo app in this repo (`/`, deployed live) is the **product surface** — the UI/UX and every
 flow described below. It is intentionally *not* wired to a real agent, real sandboxes, or a real
-model gateway (the assignment explicitly allows dummy flows for this). What follows is the
-system I'd build behind that UI to make every one of those flows real.
+model gateway; those are simulated deliberately (see `src/lib/architect/agent-sim.ts`). What
+follows is the system I'd build behind that UI to make every one of those flows real.
 
 ---
 
@@ -248,7 +248,7 @@ real scaling problems are the other two planes:
 
 ## What this repo actually demonstrates
 
-- Every screen and flow described in the assignment (auth → homepage → chat → agent trace →
+- Every screen and flow a vibe-coding platform needs (auth → homepage → chat → agent trace →
   preview → code view → GitHub → deploy), designed from first principles for both a
   non-technical builder (**Vibe mode**) and an engineer (**Pro mode**, same project).
 - Real, working auth and a real, persisted database (Supabase: Postgres + Auth + Row Level

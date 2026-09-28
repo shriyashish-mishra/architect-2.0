@@ -66,8 +66,8 @@ export function SettingsForm({ email, isAnonymous }: { email: string; isAnonymou
       <Card className="p-5">
         <h2 className="font-semibold">About</h2>
         <p className="mt-2 text-sm text-text-muted">
-          Architect 2.0 — built by <span className="text-text">Shriyashish Mishra</span> for the
-          Lyzr Architect 2.0 hiring assignment (Technical Product Manager · Architect).
+          Architect 2.0 — a vibe-coding platform for both non-technical builders and engineers,
+          designed and built by <span className="text-text">Shriyashish Mishra</span>.
         </p>
         <div className="mt-3 flex items-center gap-4 text-sm text-text-muted">
           <a href="https://github.com/shriyashish-mishra/architect-2.0" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-text">

@@ -8,8 +8,7 @@ export function SiteFooter() {
         <Logo />
         <div className="flex flex-col items-center gap-1 sm:items-end">
           <p>
-            Built by <span className="text-text-muted">Shriyashish Mishra</span> for the Lyzr
-            Architect 2.0 hiring assignment.
+            Designed and built by <span className="text-text-muted">Shriyashish Mishra</span>.
           </p>
           <div className="flex items-center gap-4">
             <a
