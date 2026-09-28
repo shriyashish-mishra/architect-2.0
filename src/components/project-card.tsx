@@ -1,9 +1,15 @@
+"use client";
+
+import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FRAMEWORKS, type Project } from "@/lib/architect/types";
 import { timeAgo } from "@/lib/utils";
-import { ExternalLink, GitFork } from "lucide-react";
+import { deleteProject } from "@/app/app/actions";
+import { ExternalLink, GitFork, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const STATUS_TONE = {
   draft: "neutral",
@@ -15,11 +21,39 @@ const STATUS_TONE = {
 
 export function ProjectCard({ project }: { project: Project }) {
   const framework = FRAMEWORKS.find((f) => f.id === project.framework)?.label ?? project.framework;
+  const router = useRouter();
+  const [confirming, setConfirming] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  function handleDelete(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    startTransition(async () => {
+      await deleteProject(project.id);
+      router.refresh();
+    });
+  }
 
   return (
-    <Link href={`/app/projects/${project.id}`}>
-      <Card className="group flex h-full flex-col p-5 transition-colors hover:border-border-strong">
-        <div className="flex items-start justify-between gap-2">
+    <Link href={`/app/projects/${project.id}`} onMouseLeave={() => setConfirming(false)}>
+      <Card className="group relative flex h-full flex-col p-5 transition-colors hover:border-border-strong">
+        <button
+          onClick={handleDelete}
+          disabled={pending}
+          title={confirming ? "Click again to confirm delete" : "Delete project"}
+          className={cn(
+            "absolute right-3 top-3 rounded-md p-1.5 opacity-0 transition-opacity group-hover:opacity-100",
+            confirming ? "bg-danger/15 text-danger opacity-100" : "text-text-faint hover:bg-bg-raised-2 hover:text-danger",
+          )}
+        >
+          <Trash2 className="size-3.5" />
+        </button>
+
+        <div className="flex items-start justify-between gap-2 pr-6">
           <h3 className="font-semibold text-text group-hover:text-accent">{project.name}</h3>
           <Badge tone={STATUS_TONE[project.status]}>{project.status}</Badge>
         </div>

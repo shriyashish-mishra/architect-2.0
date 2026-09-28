@@ -33,6 +33,7 @@ export function NewProjectForm() {
   const [model, setModel] = useState<ModelId>("claude");
   const [pending, startTransition] = useTransition();
   const [importOpen, setImportOpen] = useState(false);
+  const [uploadHint, setUploadHint] = useState(false);
   // Collapsed by default — a first-time, non-technical user should never
   // have to understand "framework" or "model" to get a good result.
   // Everyone else can open this and pick exactly what they want.
@@ -87,13 +88,20 @@ export function NewProjectForm() {
             </button>
             {importOpen && <ImportMenu onClose={() => setImportOpen(false)} />}
           </div>
-          <button
-            type="button"
-            className="flex h-8 items-center gap-1.5 rounded-md border border-border-strong px-2.5 text-xs text-text-muted hover:text-text"
-            title="Upload a project zip (coming soon in this demo)"
-          >
-            <Upload className="size-3.5" /> Upload
-          </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setUploadHint((v) => !v)}
+              className="flex h-8 items-center gap-1.5 rounded-md border border-border-strong px-2.5 text-xs text-text-muted hover:text-text"
+            >
+              <Upload className="size-3.5" /> Upload
+            </button>
+            {uploadHint && (
+              <div className="absolute left-0 top-9 z-20 w-56 rounded-lg border border-border-strong bg-bg-raised-2 p-3 text-xs text-text-muted shadow-xl">
+                Zip upload is coming soon — for now, use <span className="text-text">Import a project</span> to bring in something that&apos;s already on GitHub.
+              </div>
+            )}
+          </div>
 
           <button
             type="button"
