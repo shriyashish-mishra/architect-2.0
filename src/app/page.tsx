@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { SiteFooter } from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -195,12 +196,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="border-t border-border-subtle">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center justify-between gap-4 px-5 py-10 text-sm text-text-faint sm:flex-row">
-          <Logo />
-          <p>Built for the Lyzr Architect 2.0 assignment.</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

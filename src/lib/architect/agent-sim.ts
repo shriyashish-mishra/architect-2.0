@@ -40,7 +40,14 @@ function id() {
   return `t_${Date.now()}_${counter}`;
 }
 
+const AGENT_FRAMEWORK_IDS = new Set(["langgraph", "crewai", "autogen", "llamaindex", "agent-other"]);
+export function isAgentFramework(framework: string): boolean {
+  return AGENT_FRAMEWORK_IDS.has(framework);
+}
+
 export function generateBuildPlan(prompt: string, framework: string): BuildPlan {
+  if (AGENT_FRAMEWORK_IDS.has(framework)) return generateAgentPlan(prompt, framework);
+
   const subject = titleCaseFromPrompt(prompt) || "New App";
 
   const files: FileNode[] = [
@@ -173,6 +180,210 @@ export function generateBuildPlan(prompt: string, framework: string): BuildPlan 
     trace,
     previewTitle: subject,
     previewDescription: `A live-editable ${framework} app scaffolded from your prompt. In production this preview streams from the running sandbox over a websocket; here it's a representative snapshot.`,
+  };
+}
+
+const AGENT_FRAMEWORK_LABELS: Record<string, string> = {
+  langgraph: "LangGraph",
+  crewai: "CrewAI",
+  autogen: "AutoGen",
+  llamaindex: "LlamaIndex",
+  "agent-other": "your agent framework",
+};
+
+function generateAgentPlan(prompt: string, framework: string): BuildPlan {
+  const subject = titleCaseFromPrompt(prompt) || "New Agent";
+  const fwLabel = AGENT_FRAMEWORK_LABELS[framework] ?? framework;
+
+  const files: FileNode[] = [
+    {
+      path: "agent",
+      kind: "dir",
+      children: [
+        { path: "agent/graph.py", kind: "file", language: "py" },
+        { path: "agent/tools.py", kind: "file", language: "py" },
+        { path: "agent/memory.py", kind: "file", language: "py" },
+        { path: "agent/prompts.py", kind: "file", language: "py" },
+      ],
+    },
+    {
+      path: "evals",
+      kind: "dir",
+      children: [{ path: "evals/test_cases.py", kind: "file", language: "py" }],
+    },
+    { path: "main.py", kind: "file", language: "py" },
+    { path: "requirements.txt", kind: "file", language: "text" },
+    { path: "README.md", kind: "file", language: "md" },
+  ];
+
+  const trace: AgentTrace[] = [
+    {
+      id: id(),
+      kind: "plan",
+      title: "Reading your prompt",
+      detail: `Breaking "${prompt.slice(0, 80)}${prompt.length > 80 ? "…" : ""}" into an agent plan: what it needs to reason about, which tools it needs, and what "done" looks like.`,
+      durationMs: 900,
+    },
+    {
+      id: id(),
+      kind: "plan",
+      title: "Drafting the agent graph",
+      detail: `1. Scaffold a ${fwLabel} project\n2. Define the graph/crew structure and each node's role\n3. Wire up tools (${subject} needs real actions, not just chat)\n4. Add memory + guardrails\n5. Write eval cases and self-review`,
+      durationMs: 700,
+    },
+    {
+      id: id(),
+      kind: "run_tool",
+      title: "sandbox.create()",
+      detail: `Provisioning an isolated Python sandbox (${fwLabel}, Python 3.12) — agents run headless, so there's no browser preview, just live logs.`,
+      durationMs: 1200,
+    },
+    {
+      id: id(),
+      kind: "write_code",
+      title: "agent/tools.py",
+      detail: `Writing the tools ${subject} can call.`,
+      durationMs: 900,
+    },
+    {
+      id: id(),
+      kind: "write_code",
+      title: "agent/graph.py",
+      detail: `Wiring the ${fwLabel} graph: nodes, edges, and where a human-in-the-loop checkpoint makes sense.`,
+      durationMs: 1100,
+    },
+    {
+      id: id(),
+      kind: "run_tool",
+      title: "pip install -r requirements.txt",
+      detail: "Installing dependencies inside the sandbox.",
+      durationMs: 1400,
+    },
+    {
+      id: id(),
+      kind: "run_tool",
+      title: "python -m evals.test_cases",
+      detail: "Running the agent against its eval cases before calling it done.",
+      durationMs: 1300,
+    },
+    {
+      id: id(),
+      kind: "error",
+      title: "evals/test_cases.py::test_tool_call_recovery — FAILED",
+      detail: "The agent didn't retry after a tool call returned an error — it just gave up and reported failure to the user.",
+      durationMs: 500,
+    },
+    {
+      id: id(),
+      kind: "recover",
+      title: "Adding a bounded retry",
+      detail: "Wrapping tool calls with a 3-attempt retry and feeding the error back to the model, then re-running evals.",
+      durationMs: 900,
+    },
+    {
+      id: id(),
+      kind: "run_tool",
+      title: "python -m evals.test_cases",
+      detail: "All eval cases passed. Agent is live and listening.",
+      durationMs: 900,
+    },
+    {
+      id: id(),
+      kind: "info",
+      title: "Ready",
+      detail: `${subject} is live. Ask for changes any time — I'll edit the same graph instead of starting over.`,
+      durationMs: 400,
+    },
+  ];
+
+  return {
+    summary: `Built **${subject}** — a ${fwLabel} agent with its own tools, memory, and eval cases, matching what you described.`,
+    files,
+    trace,
+    previewTitle: subject,
+    previewDescription: `${subject} running in a headless Python sandbox. Agents don't have a UI to preview — this tab instead streams its live run logs.`,
+  };
+}
+
+export function generateImportPlan(repoName: string, framework: string): BuildPlan {
+  const files: FileNode[] = [
+    {
+      path: "app",
+      kind: "dir",
+      children: [
+        { path: "app/layout.tsx", kind: "file", language: "tsx" },
+        { path: "app/page.tsx", kind: "file", language: "tsx" },
+        { path: "app/dashboard/page.tsx", kind: "file", language: "tsx" },
+        { path: "app/globals.css", kind: "file", language: "css" },
+      ],
+    },
+    {
+      path: "components",
+      kind: "dir",
+      children: [
+        { path: "components/Nav.tsx", kind: "file", language: "tsx" },
+        { path: "components/Table.tsx", kind: "file", language: "tsx" },
+      ],
+    },
+    {
+      path: "agents",
+      kind: "dir",
+      children: [{ path: "agents/orchestrator.ts", kind: "file", language: "ts" }],
+    },
+    {
+      path: "tests",
+      kind: "dir",
+      children: [{ path: "tests/smoke.test.ts", kind: "file", language: "ts" }],
+    },
+    { path: ".github/workflows/ci.yml", kind: "file", language: "yaml" },
+    { path: "package.json", kind: "file", language: "json" },
+    { path: "README.md", kind: "file", language: "md" },
+  ];
+
+  const trace: AgentTrace[] = [
+    {
+      id: id(),
+      kind: "run_tool",
+      title: `git clone ${repoName}`,
+      detail: "Cloning the repository into a fresh sandbox over your GitHub App installation token.",
+      durationMs: 1000,
+    },
+    {
+      id: id(),
+      kind: "run_tool",
+      title: "npm install",
+      detail: "Installing dependencies exactly as pinned in the existing lockfile — nothing upgraded.",
+      durationMs: 1400,
+    },
+    {
+      id: id(),
+      kind: "plan",
+      title: "Reading the existing structure",
+      detail: `Indexing ${repoName}: routes, components, an existing "agents/" module, and a CI workflow. Building a map of the codebase before touching anything.`,
+      durationMs: 1100,
+    },
+    {
+      id: id(),
+      kind: "run_tool",
+      title: "npm run build",
+      detail: "Confirming the project builds as-is before any changes, so I never hand you a broken starting point.",
+      durationMs: 1200,
+    },
+    {
+      id: id(),
+      kind: "info",
+      title: "Ready",
+      detail: `Imported ${repoName}. I've read the existing code and I'll match its structure and conventions for anything you ask next — no rewrites.`,
+      durationMs: 400,
+    },
+  ];
+
+  return {
+    summary: `Imported **${repoName}** — read the existing ${framework} codebase, confirmed it builds, and I'm ready to keep working in it.`,
+    files,
+    trace,
+    previewTitle: repoName,
+    previewDescription: `The existing app from ${repoName}, now running in an Architect sandbox exactly as it was on GitHub.`,
   };
 }
 

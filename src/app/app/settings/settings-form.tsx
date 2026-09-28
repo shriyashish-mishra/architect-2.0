@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { GitFork, Key, Check } from "lucide-react";
+import { GitFork, Key, Check, Link2, Globe } from "lucide-react";
 import { MODELS } from "@/lib/architect/types";
 
 export function SettingsForm({ email, isAnonymous }: { email: string; isAnonymous: boolean }) {
@@ -60,6 +60,25 @@ export function SettingsForm({ email, isAnonymous }: { email: string; isAnonymou
               Connect
             </Button>
           )}
+        </div>
+      </Card>
+
+      <Card className="p-5">
+        <h2 className="font-semibold">About</h2>
+        <p className="mt-2 text-sm text-text-muted">
+          Architect 2.0 — built by <span className="text-text">Shriyashish Mishra</span> for the
+          Lyzr Architect 2.0 hiring assignment (Technical Product Manager · Architect).
+        </p>
+        <div className="mt-3 flex items-center gap-4 text-sm text-text-muted">
+          <a href="https://github.com/shriyashish-mishra/architect-2.0" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-text">
+            <GitFork className="size-3.5" /> GitHub
+          </a>
+          <a href="https://linkedin.com/in/shriyashish-mishra" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-text">
+            <Link2 className="size-3.5" /> LinkedIn
+          </a>
+          <a href="https://shriyashish.lovable.app" target="_blank" rel="noreferrer" className="flex items-center gap-1.5 hover:text-text">
+            <Globe className="size-3.5" /> Portfolio
+          </a>
         </div>
       </Card>
     </div>

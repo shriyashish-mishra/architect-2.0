@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { generateBuildPlan, type FileNode } from "@/lib/architect/agent-sim";
+import { generateBuildPlan, generateImportPlan, isAgentFramework, type BuildPlan, type FileNode } from "@/lib/architect/agent-sim";
 import { MODELS, type ModelId, type Project, type ProjectMessage, type WorkspaceMode } from "@/lib/architect/types";
 import { ChatPanel } from "./chat-panel";
 import { PreviewPanel } from "./preview-panel";
@@ -52,6 +52,12 @@ export function Workspace({
   const ran = useRef(false);
 
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "app";
+  // Only the very first build for an imported project should read as an
+  // import ("clone, read structure, confirm it builds"); any follow-up
+  // prompt after that is a normal build on top of it.
+  const importedRepo = project.description?.startsWith("import:")
+    ? project.description.slice("import:".length)
+    : null;
 
   async function persistMessage(role: ProjectMessage["role"], content: string, stepKind: ProjectMessage["step_kind"] = null) {
     const optimistic: ProjectMessage = {
@@ -80,10 +86,9 @@ export function Workspace({
     await supabase.from("projects").update({ status: next }).eq("id", project.id);
   }
 
-  async function runBuild(prompt: string) {
+  async function runPlan(plan: BuildPlan) {
     setIsBuilding(true);
     await setProjectStatus("building");
-    const plan = generateBuildPlan(prompt, project.framework);
     setFiles(plan.files);
     setPreview({ title: plan.previewTitle, description: plan.previewDescription });
 
@@ -96,6 +101,11 @@ export function Workspace({
     setIsBuilding(false);
   }
 
+  // Normal build/edit, used for every prompt after the project exists.
+  async function runBuild(prompt: string) {
+    await runPlan(generateBuildPlan(prompt, project.framework));
+  }
+
   useEffect(() => {
     if (ran.current) return;
     ran.current = true;
@@ -104,14 +114,20 @@ export function Workspace({
     // not part of the synchronous effect commit.
     queueMicrotask(() => {
       const lastUserPrompt = [...initialMessages].reverse().find((m) => m.role === "user")?.content;
+      if (!lastUserPrompt) return;
 
-      if (runOnMount && lastUserPrompt) {
+      // Imports get their own plan (clone -> read structure -> confirm it
+      // builds) instead of the from-scratch build sequence.
+      const initialPlan = importedRepo
+        ? generateImportPlan(importedRepo, project.framework)
+        : generateBuildPlan(lastUserPrompt, project.framework);
+
+      if (runOnMount) {
         router.replace(`/app/projects/${project.id}`);
-        runBuild(lastUserPrompt);
-      } else if (lastUserPrompt) {
-        const plan = generateBuildPlan(lastUserPrompt, project.framework);
-        setFiles(plan.files);
-        setPreview({ title: plan.previewTitle, description: plan.previewDescription });
+        runPlan(initialPlan);
+      } else {
+        setFiles(initialPlan.files);
+        setPreview({ title: initialPlan.previewTitle, description: initialPlan.previewDescription });
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -228,7 +244,7 @@ export function Workspace({
 
           <div className="min-h-0 flex-1">
             {effectiveTab === "preview" && (
-              <PreviewPanel title={preview.title || name} description={preview.description} isBuilding={isBuilding} slug={slug} />
+              <PreviewPanel title={preview.title || name} description={preview.description} isBuilding={isBuilding} slug={slug} isAgent={isAgentFramework(project.framework)} />
             )}
             {effectiveTab === "code" && <CodePanel files={files} projectName={name} />}
             {effectiveTab === "agent" && <AgentPanel messages={messages} model={MODELS.find((m) => m.id === model)?.label ?? model} isBuilding={isBuilding} />}

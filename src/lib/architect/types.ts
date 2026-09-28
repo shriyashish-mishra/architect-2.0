@@ -1,4 +1,7 @@
-export type Framework = "nextjs" | "react" | "python" | "node" | "other";
+export type Framework =
+  | "nextjs" | "react" | "python" | "node" | "other"
+  | "langgraph" | "crewai" | "autogen" | "llamaindex" | "agent-other";
+export type ProjectKind = "app" | "agent";
 export type ModelId = "claude" | "gpt" | "gemini" | "oss";
 export type WorkspaceMode = "vibe" | "pro";
 export type ProjectStatus = "draft" | "building" | "ready" | "deployed" | "error";
@@ -42,5 +45,15 @@ export const FRAMEWORKS: { id: Framework; label: string }[] = [
   { id: "react", label: "React + Vite" },
   { id: "python", label: "Python / FastAPI" },
   { id: "node", label: "Node.js" },
-  { id: "other", label: "Other / custom agent framework" },
+  { id: "other", label: "Other" },
+];
+
+// "Build agents in any framework": a separate list surfaced when the user
+// is building an agent/workflow rather than a full app.
+export const AGENT_FRAMEWORKS: { id: Framework; label: string }[] = [
+  { id: "langgraph", label: "LangGraph" },
+  { id: "crewai", label: "CrewAI" },
+  { id: "autogen", label: "AutoGen" },
+  { id: "llamaindex", label: "LlamaIndex" },
+  { id: "agent-other", label: "Other / custom agent framework" },
 ];

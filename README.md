@@ -84,3 +84,10 @@ terminal to collaborate on the same project. Architect gives an engineer the sam
 terminal, and agent trace, in the same project a PM or founder can drive from chat — so the
 handoff between "someone described what they wanted" and "an engineer is now iterating on it" is
 one URL, not an export.
+
+## Author
+
+**Shriyashish Mishra** — Product Manager, 3+ years building AI-powered and B2B SaaS products.
+[LinkedIn](https://linkedin.com/in/shriyashish-mishra) · [Portfolio](https://shriyashish.lovable.app) · [GitHub](https://github.com/shriyashish-mishra)
+
+Built for the Lyzr **Architect 2.0** hiring assignment (Technical Product Manager · Architect).

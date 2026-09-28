@@ -1,29 +1,55 @@
 "use client";
 
-import { useState } from "react";
-import { RefreshCw, Monitor, Smartphone, ExternalLink } from "lucide-react";
+import { useEffect, useState } from "react";
+import { RefreshCw, Monitor, Smartphone, ExternalLink, Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const AGENT_LOG_LINES = [
+  "[graph] node=plan  status=ok   latency=412ms",
+  "[tool]  name=search_docs  args={query: \"refund policy\"}",
+  "[tool]  name=search_docs  status=ok  results=3  latency=180ms",
+  "[graph] node=respond  status=ok   latency=290ms",
+  "[eval]  test_cases: 6/6 passed",
+  "[agent] listening for the next input…",
+];
 
 export function PreviewPanel({
   title,
   description,
   isBuilding,
   slug,
+  isAgent = false,
 }: {
   title: string;
   description: string;
   isBuilding: boolean;
   slug: string;
+  isAgent?: boolean;
 }) {
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [spinning, setSpinning] = useState(false);
+  const [visibleLines, setVisibleLines] = useState(0);
+
+  useEffect(() => {
+    if (isBuilding || !isAgent) return;
+    let timers: ReturnType<typeof setTimeout>[] = [];
+    // Deferred a tick so the reset below is a reaction to the props change,
+    // not part of the synchronous effect commit.
+    queueMicrotask(() => {
+      setVisibleLines(0);
+      timers = AGENT_LOG_LINES.map((_, i) =>
+        setTimeout(() => setVisibleLines((n) => Math.max(n, i + 1)), i * 350),
+      );
+    });
+    return () => timers.forEach(clearTimeout);
+  }, [isBuilding, isAgent]);
 
   return (
     <div className="flex h-full min-h-0 flex-col">
       <div className="flex items-center gap-2 border-b border-border-subtle px-3 py-2">
         <div className="flex items-center gap-1 rounded-md border border-border-strong bg-bg px-2 py-1 font-mono text-xs text-text-faint">
           <span className="size-1.5 rounded-full bg-success" />
-          {slug}.architect.app
+          {isAgent ? `${slug} — headless` : `${slug}.architect.app`}
         </div>
         <button
           onClick={() => {
@@ -31,34 +57,50 @@ export function PreviewPanel({
             setTimeout(() => setSpinning(false), 500);
           }}
           className="rounded-md p-1.5 text-text-faint hover:bg-bg-raised-2 hover:text-text"
-          title="Refresh preview"
+          title={isAgent ? "Refresh logs" : "Refresh preview"}
         >
           <RefreshCw className={cn("size-3.5", spinning && "animate-spin")} />
         </button>
-        <div className="ml-auto flex items-center gap-1">
-          <button
-            onClick={() => setDevice("desktop")}
-            className={cn("rounded-md p-1.5", device === "desktop" ? "bg-bg-raised-2 text-text" : "text-text-faint hover:text-text")}
-          >
-            <Monitor className="size-3.5" />
-          </button>
-          <button
-            onClick={() => setDevice("mobile")}
-            className={cn("rounded-md p-1.5", device === "mobile" ? "bg-bg-raised-2 text-text" : "text-text-faint hover:text-text")}
-          >
-            <Smartphone className="size-3.5" />
-          </button>
-          <button className="ml-1 rounded-md p-1.5 text-text-faint hover:bg-bg-raised-2 hover:text-text" title="Open in new tab (demo)">
-            <ExternalLink className="size-3.5" />
-          </button>
-        </div>
+        {!isAgent && (
+          <div className="ml-auto flex items-center gap-1">
+            <button
+              onClick={() => setDevice("desktop")}
+              className={cn("rounded-md p-1.5", device === "desktop" ? "bg-bg-raised-2 text-text" : "text-text-faint hover:text-text")}
+            >
+              <Monitor className="size-3.5" />
+            </button>
+            <button
+              onClick={() => setDevice("mobile")}
+              className={cn("rounded-md p-1.5", device === "mobile" ? "bg-bg-raised-2 text-text" : "text-text-faint hover:text-text")}
+            >
+              <Smartphone className="size-3.5" />
+            </button>
+            <button className="ml-1 rounded-md p-1.5 text-text-faint hover:bg-bg-raised-2 hover:text-text" title="Open in new tab (demo)">
+              <ExternalLink className="size-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-1 items-center justify-center overflow-auto bg-[#05070a] p-6">
         {isBuilding ? (
           <div className="flex flex-col items-center gap-3 text-text-faint">
             <span className="pulse-dot size-2 rounded-full bg-accent" />
-            <p className="text-sm">Spinning up the sandbox…</p>
+            <p className="text-sm">{isAgent ? "Booting the agent sandbox…" : "Spinning up the sandbox…"}</p>
+          </div>
+        ) : isAgent ? (
+          <div className="w-full max-w-2xl overflow-hidden rounded-lg border border-border-strong bg-black">
+            <div className="flex items-center gap-2 border-b border-border-subtle px-4 py-2.5">
+              <Bot className="size-4 text-accent" />
+              <span className="text-xs font-semibold text-text">{title || "Agent"} — live run log</span>
+            </div>
+            <div className="space-y-1.5 px-4 py-4 font-mono text-xs text-success">
+              {AGENT_LOG_LINES.slice(0, visibleLines).map((line, i) => (
+                <div key={i} className={i === visibleLines - 1 ? "text-text" : "text-success/80"}>{line}</div>
+              ))}
+              {visibleLines < AGENT_LOG_LINES.length && <span className="caret-blink">▍</span>}
+            </div>
+            <div className="border-t border-border-subtle px-4 py-3 text-[11px] text-text-faint">{description}</div>
           </div>
         ) : (
           <div

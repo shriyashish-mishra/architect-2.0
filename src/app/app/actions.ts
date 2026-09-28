@@ -50,6 +50,49 @@ export async function createProject(formData: FormData) {
   redirect(`/app/projects/${project.id}?fresh=1`);
 }
 
+export async function importProject(formData: FormData) {
+  const repo = String(formData.get("repo") ?? "").trim();
+  const framework = String(formData.get("framework") ?? "nextjs") as Framework;
+  if (!repo) return;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/auth/sign-in");
+
+  const name = repo.split("/").pop() ?? repo;
+
+  const { data: project, error } = await supabase
+    .from("projects")
+    .insert({
+      user_id: user.id,
+      name,
+      framework,
+      model: "claude",
+      status: "building",
+      github_repo: repo,
+      // Marks this project as import-sourced so the workspace regenerates
+      // the "existing codebase" file tree instead of a from-scratch build.
+      description: `import:${repo}`,
+    })
+    .select()
+    .single();
+
+  if (error || !project) {
+    throw new Error(error?.message ?? "Could not import project");
+  }
+
+  await supabase.from("project_messages").insert({
+    project_id: project.id,
+    user_id: user.id,
+    role: "user",
+    content: `Import ${repo} from GitHub and let's keep working on it here.`,
+  });
+
+  redirect(`/app/projects/${project.id}?fresh=1`);
+}
+
 export async function deleteProject(projectId: string) {
   const supabase = await createClient();
   await supabase.from("projects").delete().eq("id", projectId);
