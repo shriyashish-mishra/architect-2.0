@@ -3,7 +3,8 @@
 import { useActionState, useState, useTransition } from "react";
 import { signInWithPassword, continueAsGuest, type AuthState } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
-import { GitFork, Sparkles } from "lucide-react";
+import { GithubSignInButton } from "@/components/github-signin-button";
+import { Sparkles } from "lucide-react";
 
 export function SignInForm({ next }: { next: string }) {
   const [state, formAction, pending] = useActionState<AuthState, FormData>(
@@ -30,14 +31,7 @@ export function SignInForm({ next }: { next: string }) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Button
-          variant="secondary"
-          className="w-full"
-          disabled
-          title="Configure a GitHub OAuth app to enable this"
-        >
-          <GitFork className="size-4" /> Continue with GitHub
-        </Button>
+        <GithubSignInButton next={next} />
         <Button
           variant="outline"
           className="w-full"
