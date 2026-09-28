@@ -10,9 +10,23 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+      const response = NextResponse.redirect(`${origin}${next}`);
+      // Supabase only ever hands back the GitHub provider token here, right
+      // after the OAuth round-trip — it isn't retrievable from the session
+      // on later requests, so capture it now (httpOnly cookie) for the real
+      // "Import repo" list to call the GitHub API with.
+      if (data.session?.provider_token) {
+        response.cookies.set("gh_token", data.session.provider_token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "lax",
+          maxAge: 60 * 60 * 24 * 7,
+          path: "/",
+        });
+      }
+      return response;
     }
   }
 

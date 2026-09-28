@@ -2,8 +2,49 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { Framework, ModelId } from "@/lib/architect/types";
+
+export interface GithubRepo {
+  fullName: string;
+  name: string;
+  private: boolean;
+  updatedAt: string;
+}
+
+// Real (not simulated): lists the signed-in user's own GitHub repos via the
+// GitHub API, using the OAuth provider token captured at /auth/callback.
+// Returns null (rather than []) when there's no token, so the UI can tell
+// "connected, zero repos" apart from "not connected via GitHub at all".
+export async function listGithubRepos(): Promise<GithubRepo[] | null> {
+  const token = (await cookies()).get("gh_token")?.value;
+  if (!token) return null;
+
+  const res = await fetch("https://api.github.com/user/repos?sort=updated&per_page=15", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) return null;
+
+  const repos = (await res.json()) as Array<{
+    full_name: string;
+    name: string;
+    private: boolean;
+    updated_at: string;
+  }>;
+
+  return repos.map((r) => ({
+    fullName: r.full_name,
+    name: r.name,
+    private: r.private,
+    updatedAt: r.updated_at,
+  }));
+}
 
 function titleFromPrompt(prompt: string): string {
   const cleaned = prompt.replace(/[^a-zA-Z0-9 ]/g, " ").trim();

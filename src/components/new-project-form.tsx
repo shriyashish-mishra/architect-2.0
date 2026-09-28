@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { createProject, importProject } from "@/app/app/actions";
+import { createProject, importProject, listGithubRepos, type GithubRepo } from "@/app/app/actions";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { AGENT_FRAMEWORKS, FRAMEWORKS, MODELS, type Framework, type ModelId, type ProjectKind } from "@/lib/architect/types";
-import { ArrowUp, GitFork, Upload, Check } from "lucide-react";
+import { ArrowUp, GitFork, Upload, Check, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const APP_TEMPLATES = [
@@ -148,6 +149,13 @@ export function NewProjectForm() {
 function ImportMenu({ onClose }: { onClose: () => void }) {
   const [pending, startTransition] = useTransition();
   const [picked, setPicked] = useState<string | null>(null);
+  // undefined = still loading; null = no GitHub account connected (fall
+  // back to the illustrative list); array = your real repos.
+  const [repos, setRepos] = useState<GithubRepo[] | null | undefined>(undefined);
+
+  useEffect(() => {
+    listGithubRepos().then(setRepos);
+  }, []);
 
   function pick(repo: string) {
     setPicked(repo);
@@ -157,24 +165,42 @@ function ImportMenu({ onClose }: { onClose: () => void }) {
     startTransition(() => importProject(fd));
   }
 
+  const isReal = Array.isArray(repos);
+  const items = isReal
+    ? repos
+    : FAKE_REPOS.map((full) => ({ fullName: full, name: full.split("/")[1], private: false, updatedAt: "" }));
+
   return (
-    <div className="absolute left-0 top-9 z-20 w-64 rounded-lg border border-border-strong bg-bg-raised-2 p-1.5 shadow-xl">
-      <p className="px-2 py-1.5 text-[11px] uppercase tracking-wider text-text-faint">
-        Your GitHub repos
+    <div className="absolute left-0 top-9 z-20 w-72 rounded-lg border border-border-strong bg-bg-raised-2 p-1.5 shadow-xl">
+      <p className="flex items-center justify-between px-2 py-1.5 text-[11px] uppercase tracking-wider text-text-faint">
+        <span>{isReal ? "Your GitHub repos" : "Example repos"}</span>
+        {isReal && <Badge tone="success">connected</Badge>}
       </p>
-      {FAKE_REPOS.map((repo) => (
-        <button
-          key={repo}
-          type="button"
-          disabled={pending}
-          onClick={() => pick(repo)}
-          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-text-muted hover:bg-bg-overlay hover:text-text disabled:opacity-60"
-        >
-          <GitFork className="size-3.5 shrink-0" />
-          <span className="flex-1 truncate">{repo.split("/")[1]}</span>
-          {picked === repo && (pending ? <span className="pulse-dot size-1.5 rounded-full bg-accent" /> : <Check className="size-3.5 text-success" />)}
-        </button>
-      ))}
+      {!isReal && (
+        <p className="px-2 pb-1.5 text-[11px] text-text-faint">
+          Illustrative — sign in with GitHub to import your real repos.
+        </p>
+      )}
+      {repos === undefined ? (
+        <p className="px-2 py-2 text-xs text-text-faint">Loading…</p>
+      ) : isReal && repos.length === 0 ? (
+        <p className="px-2 py-2 text-xs text-text-faint">No repos found on your account.</p>
+      ) : (
+        items.map((repo) => (
+          <button
+            key={repo.fullName}
+            type="button"
+            disabled={pending}
+            onClick={() => pick(repo.fullName)}
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs text-text-muted hover:bg-bg-overlay hover:text-text disabled:opacity-60"
+          >
+            <GitFork className="size-3.5 shrink-0" />
+            <span className="flex-1 truncate">{repo.name}</span>
+            {repo.private && <Lock className="size-3 shrink-0 text-text-faint" />}
+            {picked === repo.fullName && (pending ? <span className="pulse-dot size-1.5 rounded-full bg-accent" /> : <Check className="size-3.5 text-success" />)}
+          </button>
+        ))
+      )}
       <button
         type="button"
         onClick={onClose}
