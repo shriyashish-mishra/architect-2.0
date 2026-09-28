@@ -31,10 +31,16 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.local
+.env.*.local
+!.env.example
 
 # vercel
 .vercel
+
+# local-only prep notes, not part of the submission
+submission-answers.md
 
 # typescript
 *.tsbuildinfo
